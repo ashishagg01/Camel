@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<CommandRequest>
+    <Params>
+        <param><ParamName>username</ParamName>
+        <ParamValue>ashish</ParamValue></param>
+        <param><ParamName>password</ParamName>
+        <ParamValue>********</ParamValue></param>
+    </Params>
+</CommandRequest>

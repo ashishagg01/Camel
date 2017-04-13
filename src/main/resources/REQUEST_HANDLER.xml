@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camel="http://camel.apache.org/schema/spring"
+	xmlns:broker="http://activemq.apache.org/schema/core" xmlns:prop="http://camel.apache.org/schema/placeholder"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+	<routeContext id="REQUEST_HANDLER" xmlns="http://camel.apache.org/schema/spring">
+
+		<route id="initjmsxmlrequest">
+			<from
+				uri="jms:queue:{{JMS_XML_REQUEST_QUEUE}}?concurrentConsumers={{JMS_CONCURRENT_CONSUMERS}}" />
+			<setExchangePattern pattern="InOut" />
+
+			<choice>
+				<when>
+					<simple>${header.JMSReplyTo} == null</simple>
+					<setHeader headerName="JMSReplyTo">
+						<simple>{{JMS_XML_RESPONSE_QUEUE}}</simple>
+					</setHeader>
+				</when>
+			</choice>
+			<process ref="readXMLProcessor" />
+
+			<setProperty propertyName="JMS-REQUEST-TYPE">
+				<simple>XML</simple>
+			</setProperty>
+			<to uri="log:org.apache.camel?level=DEBUG&amp;showAll=true" />
+			<to
+				uri="log:org.apache.camel?level=DEBUG&amp;showHeaders=true&amp;showBody=true" />
+			<to uri="seda:processRequest" />
+
+		</route>
+
+	</routeContext>
+</beans>

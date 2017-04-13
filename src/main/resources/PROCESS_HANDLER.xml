@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camel="http://camel.apache.org/schema/spring"
+	xmlns:broker="http://activemq.apache.org/schema/core" xmlns:prop="http://camel.apache.org/schema/placeholder"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+
+	<routeContext id="PROCESS_HANDLER" xmlns="http://camel.apache.org/schema/spring">
+
+		<route id="processRequest">
+			<from
+				uri="seda:processRequest?concurrentConsumers={{JMS_CONCURRENT_CONSUMERS}}" />
+
+			<when>
+				<simple>${header.JMS-REQUEST-TYPE} == 'XML'</simple>
+
+				<setHeader headerName="CamelEnrichResourcePath">
+					<simple>{{TEST_OUTPUT_XML}}</simple>
+				</setHeader>
+				<process ref="enrichProcessor" />
+				<to uri="log:org.apache.camel?level=DEBUG&amp;showAll=true"/>
+				<to
+					uri="log:org.apache.camel?level=DEBUG&amp;showHeaders=true&amp;showBody=true" />
+				<to uri="jms:queue:{{JMS_XML_RESPONSE_QUEUE}}?disableReplyTo=true" />
+			</when>
+		</route>
+
+
+	</routeContext>
+</beans>

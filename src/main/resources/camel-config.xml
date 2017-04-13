@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camel="http://camel.apache.org/schema/spring"
+	xmlns:broker="http://activemq.apache.org/schema/core" xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:prop="http://camel.apache.org/schema/placeholder"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+        http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd">
+
+	<bean id="enrichProcessor" class="com.acc.processor.EnrichProcessor"></bean>
+
+	<bean id="readXMLProcessor" class="com.acc.processor.ReadXMLProcessor"></bean>
+
+
+	<!-- Bean for loading property file (camel and spring both supported) -->
+	<bean id="bridgePropertyPlaceholder"
+		class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
+		<!--Properties file is in the classpath -->
+		<property name="location" value="classpath:camel.properties" />
+	</bean>
+
+	<!-- JMS configuration -->
+	<bean id="jms" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="brokerURL" value="tcp://localhost:61616" />
+	</bean>
+
+	<!-- <bean id="jms" class="org.apache.camel.component.jms.JmsComponent ">
+		<property name="configuration" ref="jmsConfiguration" />
+	</bean>
+	<bean id="jmsConfiguration" class="org.apache.camel.component.jms.JmsConfiguration">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="transactionManager" ref="jmsTransactionManager" />
+	</bean>
+
+	<bean id="jmsTransactionManager"
+		class="org.springframework.jms.connection.JmsTransactionManager">
+		<property name="connectionFactory" ref="remoteConnectionFactory" />
+	</bean>
+
+	<bean id="connectionFactory" class="org.springframework.jndi.JndiObjectFactoryBean">
+		<property name="jndiTemplate">
+			<ref bean="remoteJndiTemplate" />
+		</property>
+		<property name="jndiName">
+			<value>jms/SampleFSLConnectionFactory</value>
+		</property>
+	</bean>
+	
+	<bean id="remoteJndiTemplate" class="org.springframework.jndi.JndiTemplate">
+		<property name="environment">
+			<props>
+				<prop key="java.naming.factory.initial">com.ibm.websphere.naming.WsnInitialContextFactory
+				</prop>
+				<prop key="java.naming.provider.url">iiop://10.24.63.228:2809</prop>
+			</props>
+		</property>
+	</bean> 
+
+	<bean id="remoteConnectionFactory" class="org.springframework.jndi.JndiObjectFactoryBean">
+		<property name="jndiTemplate" ref="remoteJndiTemplate" />
+		<property name="jndiName" value="jms/SampleFSLConnectionFactory" />
+		<property name="lookupOnStartup" value="true" />
+		<property name="proxyInterface" value="javax.jms.ConnectionFactory" />
+	</bean> -->
+
+
+	<import resource="PROCESS_HANDLER.xml" />
+	<import resource="REQUEST_HANDLER.xml" />
+	<import resource="TEST_JMS_REQUEST.xml" />
+
+
+	<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring"
+		useMDCLogging="true" useBreadcrumb="true">
+
+		<properties>
+			<property key="CamelLogDebugBodyMaxChars" value="10000" />
+		</properties>
+
+		<routeContextRef ref="PROCESS_HANDLER" />
+		<routeContextRef ref="REQUEST_HANDLER" />
+		<routeContextRef ref="TEST_JMS_REQUEST" />
+	</camelContext>
+
+</beans>
